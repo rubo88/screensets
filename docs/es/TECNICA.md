@@ -8,7 +8,7 @@ Desarrollado y probado en un MacBook Pro (M3 Pro) con macOS 26.6 (Tahoe), compil
 
 ## 1. Visión general
 
-screensets es **un único fichero Swift** (`screensets.swift`, unas 500 líneas, sin dependencias) que se compila en un binario con dos modos:
+screensets es **un único fichero Swift** (`screensets.swift`, unas 1.000 líneas, sin dependencias) que se compila en un binario con dos modos:
 
 - **CLI** (`list`, `on`, `off`, `toggle`, `set`, `sets`, `init`, `version`): ejecuta la orden y termina.
 - **Daemon** (`screensets daemon`): proceso permanente, lanzado por `launchd`, que ofrece:
@@ -171,7 +171,7 @@ No cambia resoluciones, frecuencias, rotación ni perfiles de color, ni guarda d
 - Las teclas se traducen con la tabla `keyCodes` (`kVK_ANSI_*`). Son **posiciones físicas**, independientes de la distribución del teclado.
 - Los modificadores salen de `modifiers` en `sets.json` (por defecto `ctrl+alt+cmd`).
 - Firma de los atajos: `'DSPL'` (`0x4453504C`). Cada tecla tiene un `id` que se guarda en `hotkeySetKeys`.
-- **Se registran al arrancar y se resuelven al pulsar:** las teclas se registran una vez, pero cada pulsación vuelve a leer `sets.json` y busca el set por su tecla. Por eso cambiar lo que hace un set no requiere reiniciar, pero añadir teclas o cambiar los modificadores sí.
+- **Se vuelven a registrar cuando cambia la configuración:** `registerHotkeys()` anula todos los atajos y los registra de nuevo. Se ejecuta al arrancar, al guardar desde el editor y cada vez que el temporizador de 2 s ve una fecha de modificación nueva en `sets.json`. Además, cada pulsación vuelve a leer `sets.json` y busca el set por su tecla, así que ningún cambio requiere reiniciar.
 
 Algunos teclados, o sus utilidades del fabricante, intercambian ⌘ y ⌃ antes de que llegue a macOS. En ese caso `hidutil property --get UserKeyMapping` está vacío y no aparece nada en Ajustes del Sistema, pero los atajos solo responden con los modificadores «equivocados». La solución es poner en `modifiers` lo que macOS recibe de verdad.
 
@@ -204,8 +204,19 @@ confirmKeep(secs) ── Mantener ──► fin
 ### Menú
 
 - `NSStatusItem` con el símbolo SF `display.2`, en modo plantilla para adaptarse al modo claro u oscuro.
-- Contenido: las pantallas conectadas (✓ si están activas; un clic las enciende o apaga), los sets con su atajo como `keyEquivalent`, y **Editar sets…** y **Ver registro**.
+- Contenido: las pantallas conectadas (✓ si están activas; un clic las enciende o apaga), los sets con su atajo como `keyEquivalent`, y **Editar sets…**, **Abrir sets.json** y **Ver registro**.
 - **El menú se reconstruye solo cuando está cerrado**: al arrancar, tras cada reconfiguración y cada 2 s, con la guarda `isOpen` (`menuWillOpen` / `menuDidClose`). Reconstruirlo en `menuNeedsUpdate` hacía que AppKit en macOS 26 lanzara `NSGenericException` («…more Layout Window passes than there are views…») y el proceso moría.
+
+### Editor de sets (`SetEditor`)
+
+Una ventana de AppKit construida en código (sin nib), que se abre desde **Editar sets…**:
+
+- `NSTableView` con los sets y botones **+ − ↑ ↓**; un `NSGridView` para el nombre y el atajo; un `NSSegmentedControl` (**No tocar / Encender / Apagar**) por cada fila de pantalla; y un `NSPopUpButton` para la principal. Los ajustes generales (casillas de modificadores, cuenta atrás e idioma) van arriba.
+- **Filas** (`computeRows`): `builtin`, `external`, `*`, todos los selectores que usa algún set (marcados como *no conectada* si `resolve` no encuentra nada) y todas las pantallas conectadas que ningún selector con nombre cubre todavía. Los selectores existentes se conservan tal cual: un set que dice `DELL U2720Q` no se reescribe como `DELL U2720Q#SERIE`.
+- El editor trabaja sobre una copia (`[EditSet]`). **Guardar** valida los sets (nombres no vacíos y únicos, atajos únicos, al menos uno de ⌃⌥⌘), los serializa con `writeConfig`, que escribe un set por línea y analiza el resultado antes de escribirlo para no generar nunca un fichero ilegible, y después llama a `registerHotkeys()` y reconstruye el menú.
+- **Probar este set ahora** pasa el set editado, aunque no esté guardado, por `runAction`, así que la cuenta atrás de confirmación sigue aplicándose.
+- Si `sets.json` existe pero no se puede leer, el editor no se abre, porque guardar borraría el fichero. En su lugar ofrece abrir el JSON.
+- Una app accesoria no tiene barra de menús visible, así que `installEditMenu()` instala un menú Edición oculto para que ⌘C / ⌘V / ⌘X / ⌘A / ⌘Z funcionen en los campos de texto.
 
 ### Idioma
 

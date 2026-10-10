@@ -8,7 +8,7 @@ Developed and tested on a MacBook Pro (M3 Pro) running macOS 26.6 (Tahoe), built
 
 ## 1. Overview
 
-screensets is **a single Swift file** (`screensets.swift`, about 500 lines, no dependencies) compiled into one binary with two modes:
+screensets is **a single Swift file** (`screensets.swift`, about 1,000 lines, no dependencies) compiled into one binary with two modes:
 
 - **CLI** (`list`, `on`, `off`, `toggle`, `set`, `sets`, `init`, `version`): runs the command and exits.
 - **Daemon** (`screensets daemon`): a long-running process started by `launchd` that provides:
@@ -171,7 +171,7 @@ screensets does not change resolutions, refresh rates, rotation or color profile
 - Keys are mapped with the `keyCodes` table (`kVK_ANSI_*`). These are **physical key positions**, independent of the keyboard layout.
 - Modifiers come from `modifiers` in `sets.json` (default `ctrl+alt+cmd`).
 - Hotkey signature `'DSPL'` (`0x4453504C`). Each key gets an `id`, stored in `hotkeySetKeys`.
-- **Registered at startup, resolved at press time:** keys are registered once, but each press re-reads `sets.json` and looks the set up by its key. Editing what a set does therefore needs no restart; adding keys or changing modifiers does.
+- **Re-registered when the config changes:** `registerHotkeys()` unregisters every hotkey and registers them again. It runs at launch, after saving from the editor, and whenever the 2-second timer sees a new modification date on `sets.json`. On top of that, each key press re-reads `sets.json` and looks the set up by its key, so no edit ever needs a restart.
 
 Some keyboards, or their vendor utilities, swap ⌘ and ⌃ before macOS sees them. In that case `hidutil property --get UserKeyMapping` is empty and nothing shows in System Settings, but the hotkeys only fire with the "wrong" modifiers. The fix is to set `modifiers` to whatever macOS actually receives.
 
@@ -204,8 +204,19 @@ confirmKeep(secs) ── Keep ──► done
 ### Menu
 
 - An `NSStatusItem` with the SF Symbol `display.2`, as a template image so it adapts to light and dark mode.
-- Contents: the connected displays (✓ if active, click to toggle), the sets with their hotkey as `keyEquivalent`, then **Edit sets…** and **Show log**.
+- Contents: the connected displays (✓ if active, click to toggle), the sets with their hotkey as `keyEquivalent`, then **Edit sets…**, **Open sets.json** and **Show log**.
 - **The menu is rebuilt only while it is closed**: at launch, after every reconfiguration and every 2 s, guarded by `isOpen` (`menuWillOpen` / `menuDidClose`). Rebuilding it inside `menuNeedsUpdate` made AppKit on macOS 26 throw `NSGenericException` ("…more Layout Window passes than there are views…"), which killed the process.
+
+### Set editor (`SetEditor`)
+
+A plain AppKit window built in code (no nib), opened from **Edit sets…**:
+
+- `NSTableView` with the sets, plus **+ − ↑ ↓** buttons; an `NSGridView` for name and hotkey; one `NSSegmentedControl` (**Leave / On / Off**) per display row; and an `NSPopUpButton` for the main display. The global settings (modifier checkboxes, countdown, language) sit at the top.
+- **Rows** (`computeRows`): `builtin`, `external`, `*`, every selector used by any set (marked *not connected* when `resolve` finds nothing), and every connected display not already covered by a named selector. Existing selectors are kept exactly as written: a set that says `DELL U2720Q` is not rewritten to `DELL U2720Q#SERIAL`.
+- The editor works on a copy (`[EditSet]`). **Save** validates the sets (non-empty unique names, unique hotkeys, at least one of ⌃⌥⌘), serializes them with `writeConfig`, which writes one set per line and parses the result before writing so it can never produce an unreadable file, then calls `registerHotkeys()` and rebuilds the menu.
+- **Try this set now** sends the edited, unsaved set through `runAction`, so the confirmation countdown still applies.
+- If `sets.json` exists but cannot be parsed, the editor does not open, because saving would wipe the file. It offers to open the JSON instead.
+- An accessory app has no visible menu bar, so `installEditMenu()` installs a hidden Edit menu to make ⌘C / ⌘V / ⌘X / ⌘A / ⌘Z work in text fields.
 
 ### Localization
 

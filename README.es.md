@@ -12,6 +12,7 @@ Nació como sustituto ligero de los «display sets» de SwitchResX, con una prio
 
 - **Sets de pantallas con atajos globales**: ⌃⌥⌘ + tecla por defecto, configurable.
 - **Icono en la barra de menús**: muestra cada pantalla con una marca ✓ (un clic la enciende o la apaga) y lista tus sets.
+- **Ventana para editar los sets**: crea, edita, reordena y prueba sets con el ratón. Por detrás sigue habiendo un JSON sencillo, para quien lo prefiera.
 - **Identifica los monitores por el número de serie del EDID**, así que dos monitores iguales se controlan por separado.
 - **Pantalla principal por set** (la de la barra de menús), opcional.
 - **Redes de seguridad**:
@@ -71,7 +72,7 @@ Pulsa el icono de dos pantallas:
 
 - **Pantallas**: las conectadas, con ✓ en las encendidas. Un clic en una la enciende o la apaga.
 - **Sets**: tus sets con su atajo. Un clic en uno lo aplica.
-- **Editar sets…** y **Ver registro**.
+- **Editar sets…** (la ventana del editor), **Abrir sets.json** y **Ver registro**.
 
 Si no ves el icono, puede que lo esté escondiendo un gestor de la barra de menús como Bartender.
 
@@ -89,7 +90,24 @@ Encender pantallas nunca pide confirmación.
 
 ## Configuración
 
-Edita `~/.config/screensets/sets.json`, o usa **Editar sets…** en el menú:
+### Con el ratón: el editor de sets
+
+Elige **Editar sets…** en el icono de la barra de menús.
+
+- **A la izquierda**: tus sets. Con **+** / **−** añades o borras un set, y con **↑** / **↓** los reordenas.
+- **A la derecha**: el set seleccionado:
+  - su **nombre** y su **atajo**;
+  - una fila por pantalla con tres opciones, **No tocar** / **Encender** / **Apagar**. Las filas son la pantalla del Mac, todas las externas, todas las pantallas, las que mencionan tus sets (marcadas como *no conectada* si no están) y cualquier otra que esté conectada;
+  - la **pantalla principal**, opcional;
+  - **Probar este set ahora**, que lo aplica al momento, con la confirmación de siempre.
+- **Arriba**: las teclas modificadoras comunes a todos los atajos, la cuenta atrás de confirmación y el idioma.
+- **Guardar** escribe `sets.json` y aplica los atajos nuevos al momento. **Cancelar** descarta los cambios.
+
+El editor no deja guardar sets sin nombre, nombres repetidos, atajos repetidos ni atajos sin ⌃, ⌥ o ⌘ (capturarían lo que escribes).
+
+### A mano: sets.json
+
+Todo está en `~/.config/screensets/sets.json` (**Abrir sets.json** en el menú):
 
 ```json
 {
@@ -134,11 +152,7 @@ Para ver el selector de cada pantalla conectada, ejecuta `screensets list`:
 4	off	DELL U2720Q#XYZ789
 ```
 
-Los cambios en un set se aplican en la siguiente pulsación. Si añades o quitas teclas, o cambias `modifiers`, reinicia la app:
-
-```bash
-launchctl kickstart -k gui/$(id -u)/io.github.rubo88.screensets
-```
+Los cambios se detectan solos en un par de segundos, atajos incluidos. No hace falta reiniciar nada.
 
 En [examples/sets.example.json](examples/sets.example.json) hay un ejemplo más completo, con dos monitores iguales.
 

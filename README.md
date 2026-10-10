@@ -12,6 +12,7 @@ It was written as a lightweight replacement for the display-set feature of Switc
 
 - **Display sets with global hotkeys**: ⌃⌥⌘ + key by default, configurable.
 - **Menu bar icon** that shows each display with a checkmark (click to toggle) and lists your sets.
+- **Set editor window**: create, edit, reorder and test sets with the mouse. A plain JSON file stays underneath for those who prefer it.
 - **Identifies monitors by EDID serial number**, so two identical monitors can be controlled separately.
 - **Optional main display per set** (the one with the menu bar).
 - **Safety nets**:
@@ -71,7 +72,7 @@ Click the two-displays icon to see:
 
 - **Displays**: every connected display, with a ✓ on the ones that are on. Click one to toggle it.
 - **Sets**: your sets with their hotkeys. Click one to apply it.
-- **Edit sets…** and **Show log**.
+- **Edit sets…** (the editor window), **Open sets.json** and **Show log**.
 
 If you can't see the icon, a menu bar manager such as Bartender may be hiding it.
 
@@ -89,7 +90,24 @@ Turning displays on never asks for confirmation.
 
 ## Configuration
 
-Edit `~/.config/screensets/sets.json`, or use **Edit sets…** in the menu:
+### With the mouse: the set editor
+
+Choose **Edit sets…** in the menu bar icon.
+
+- **Left**: your sets. Use **+** / **−** to add or delete a set and **↑** / **↓** to reorder.
+- **Right**: the selected set:
+  - its **name** and **hotkey**;
+  - one row per display with three options, **Leave** / **On** / **Off**. The rows are the built-in display, all external displays, all displays, the displays your sets mention (shown as *not connected* when they are absent) and any other connected display;
+  - the optional **main display**;
+  - **Try this set now**, which applies it straight away, with the usual confirmation.
+- **Top**: the modifier keys shared by all hotkeys, the confirmation countdown and the interface language.
+- **Save** writes `sets.json` and applies the new hotkeys immediately. **Cancel** discards your changes.
+
+The editor refuses to save sets without a name, duplicated names, duplicated hotkeys, or hotkeys without ⌃, ⌥ or ⌘ (those would capture normal typing).
+
+### By hand: sets.json
+
+Everything lives in `~/.config/screensets/sets.json` (**Open sets.json** in the menu):
 
 ```json
 {
@@ -134,11 +152,7 @@ To see the selector of every connected display, run `screensets list`:
 4	off	DELL U2720Q#XYZ789
 ```
 
-Changes to a set take effect on the next key press. If you add or remove keys, or change `modifiers`, restart the app:
-
-```bash
-launchctl kickstart -k gui/$(id -u)/io.github.rubo88.screensets
-```
+Changes are picked up automatically within a couple of seconds, hotkeys included. There is no need to restart anything.
 
 See [examples/sets.example.json](examples/sets.example.json) for a fuller example with two identical monitors.
 
