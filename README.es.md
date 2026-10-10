@@ -6,7 +6,7 @@
 
 screensets es una pequeña app para la barra de menús de macOS (un solo fichero Swift, sin dependencias) que cambia entre *sets* de pantallas: «solo el portátil», «solo la externa», «portátil + externa», etc. Una pantalla apagada desaparece de verdad: las ventanas, el Dock y la barra de menús pasan a las que quedan encendidas.
 
-Nació como sustituto ligero de los «display sets» de SwitchResX, con una prioridad por encima de todo: **que nunca te quedes sin una pantalla que funcione**. Eso incluye la trampa clásica de tener la pantalla del portátil apagada y desenchufar el monitor externo.
+Está construida alrededor de una prioridad por encima de todo: **que nunca te quedes sin una pantalla que funcione**. Eso incluye la trampa clásica de tener la pantalla del portátil apagada y desenchufar el monitor externo.
 
 ## Características
 
@@ -52,7 +52,7 @@ El instalador:
 
 Vuelve a ejecutarlo cuando quieras para actualizar.
 
-> Si usas SwitchResX u otra herramienta con atajos de pantallas, ciérrala o quita sus atajos para evitar conflictos.
+> Si otra app ya usa los mismos atajos, ciérrala o cambia sus atajos para evitar conflictos.
 
 ## Uso
 
@@ -187,7 +187,7 @@ Desde la línea de comandos no hay cuenta atrás. Sí se mantiene la protección
 
 ## Cómo funciona
 
-screensets enciende y apaga pantallas con `CGSConfigureDisplayEnabled`, la misma API **privada** de CoreGraphics que usan SwitchResX y BetterDisplay. Lee el nombre y el número de serie de cada monitor del IORegistry, y registra los atajos con `RegisterEventHotKey` de Carbon, por eso no necesita permiso de Accesibilidad.
+screensets enciende y apaga pantallas con `CGSConfigureDisplayEnabled`, una API **privada** de CoreGraphics. Lee el nombre y el número de serie de cada monitor del IORegistry, y registra los atajos con `RegisterEventHotKey` de Carbon, por eso no necesita permiso de Accesibilidad.
 
 Lo más delicado es el rescate. Cuando se desenchufa la única pantalla encendida, macOS crea una pantalla fantasma «activa» y deja de listar la del portátil apagada. Por eso screensets solo cuenta las pantallas activas **y** conectadas físicamente, y recuerda el ID de la pantalla del portátil para poder encenderla.
 

@@ -6,7 +6,7 @@
 
 screensets is a tiny macOS menu bar app (one Swift file, no dependencies) that switches between *sets* of displays: "laptop only", "external only", "laptop + external", and so on. A display that is turned off really disappears: windows, the Dock and the menu bar move to the displays that stay on.
 
-It was written as a lightweight replacement for the display-set feature of SwitchResX, with one priority above everything else: **you must never end up without a working display.** That includes the classic trap where the built-in display is off and you unplug the external monitor.
+It is built around one priority above everything else: **you must never end up without a working display.** That includes the classic trap where the built-in display is off and you unplug the external monitor.
 
 ## Features
 
@@ -52,7 +52,7 @@ The installer:
 
 Run it again at any time to update.
 
-> If you use SwitchResX or another tool with display hotkeys, quit it or remove its hotkeys to avoid conflicts.
+> If another app already uses the same hotkeys, quit it or change its hotkeys to avoid conflicts.
 
 ## Using it
 
@@ -187,7 +187,7 @@ The command line has no confirmation countdown. It still refuses to turn off the
 
 ## How it works
 
-screensets turns displays on and off with `CGSConfigureDisplayEnabled`, the same **private** CoreGraphics API that SwitchResX and BetterDisplay use. It reads monitor names and serial numbers from the IORegistry, and registers hotkeys with Carbon's `RegisterEventHotKey`, which is why it needs no Accessibility permission.
+screensets turns displays on and off with `CGSConfigureDisplayEnabled`, a **private** CoreGraphics API. It reads monitor names and serial numbers from the IORegistry, and registers hotkeys with Carbon's `RegisterEventHotKey`, which is why it needs no Accessibility permission.
 
 The trickiest part is the rescue. When the only display that is on gets unplugged, macOS creates a phantom "active" display and stops listing the built-in display that is off. screensets therefore only counts displays that are active **and** physically connected, and it remembers the built-in display's ID so it can turn it back on.
 

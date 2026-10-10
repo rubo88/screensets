@@ -8,7 +8,7 @@
 //   screensets init [--force]                        write a starter sets.json
 //   screensets daemon                                menu bar + hotkeys + safety net (run by launchd)
 //
-// Uses the private CGSConfigureDisplayEnabled API (same mechanism as SwitchResX / BetterDisplay).
+// Uses the private CGSConfigureDisplayEnabled API.
 import Cocoa
 import Carbon.HIToolbox
 

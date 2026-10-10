@@ -77,7 +77,7 @@ screensets is **a single Swift file** (`screensets.swift`, about 1,000 lines, no
 
 Private functions are declared with `@_silgen_name`, and the binary links with `-F /System/Library/PrivateFrameworks -framework CoreDisplay`.
 
-**Risk:** a macOS update can change or remove these private functions. SwitchResX and BetterDisplay rely on the same mechanism, so they would break too. After a major update, the first thing to check is that `screensets off builtin` and `screensets on builtin` still work while an external display is on.
+**Risk:** a macOS update can change or remove these private functions. After a major update, the first thing to check is that `screensets off builtin` and `screensets on builtin` still work while an external display is on.
 
 ---
 
@@ -104,7 +104,7 @@ How each entry is built:
 3. At that IORegistry node, `DisplayAttributes → ProductAttributes` holds the parsed EDID: `ProductName`, `AlphanumericSerialNumber`, `ManufacturerID`, and so on.
 4. **`connected = true`** if that node has `ProductAttributes`, or if the display is the built-in one. Stale IDs show up as `Unknown` / `--` in `screensets list` and are ignored.
 
-**Why the alphanumeric serial?** Two identical monitors have the same name, and `CGDisplaySerialNumber` returns the *numeric* EDID serial, which many monitors leave at 0. The alphanumeric serial string distinguishes them. SwitchResX uses the same data (`edidSerialString`). The CoreDisplay dictionary does not include it, which is why screensets reads the IORegistry.
+**Why the alphanumeric serial?** Two identical monitors have the same name, and `CGDisplaySerialNumber` returns the *numeric* EDID serial, which many monitors leave at 0. The alphanumeric serial string distinguishes them. The CoreDisplay dictionary does not include it, which is why screensets reads the IORegistry.
 
 A display that is **off** still reports its `IODisplayLocation`, so it can be identified and turned back on.
 
@@ -352,22 +352,7 @@ launchctl kickstart -k gui/$(id -u)/io.github.rubo88.screensets
 | Unplugging the only monitor with the built-in display off left no display | Phantom "active" display + built-in display missing from the list | "Active **and** connected" rule, remembered ID, cycling rescue (§7) |
 | Hotkeys only fired with the "wrong" modifiers | Keyboard swapping ⌘/⌃ before macOS | Configurable `modifiers` |
 
-## 11. Migrating from SwitchResX
-
-SwitchResX stores display sets in `~/Library/Preferences/fr.madrau.switchresx.daemon.plist`:
-
-- `displaySetsArray[]`: each set has `name`, `keyCode` and `monitorArray[]`.
-- In `monitorArray`, only entries with `hasActivity = true` turn displays on or off (`isActive`). `isMainDisplay` marks the main display.
-- `monitorResID` points into `allDisplays[id]`, which holds `sysMonitorName` and `edidSerialString`. These map directly to screensets' `Name#SERIAL` selectors.
-- `keyCode = (virtualKeyCode << 8) | (NSEvent modifier flags >> 16)`. For example, `0x151C` is key 21 (`4`) with `0x1C`, which is ⌃ (0x4) + ⌥ (0x8) + ⌘ (0x10).
-
-Quick dump:
-
-```bash
-plutil -p ~/Library/Preferences/fr.madrau.switchresx.daemon.plist | grep -E '"name"|keyCode|monitorResID|isActive|hasActivity'
-```
-
-## 12. Known limitations
+## 11. Known limitations
 
 - Depends on private APIs (§2).
 - `main` is only applied if the display is already reported as active at that moment. For a display turned on by the same set, this depends on how fast macOS applies the change. It worked in testing.

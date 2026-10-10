@@ -77,7 +77,7 @@ screensets es **un único fichero Swift** (`screensets.swift`, unas 1.000 línea
 
 Las funciones privadas se declaran con `@_silgen_name` y se enlaza con `-F /System/Library/PrivateFrameworks -framework CoreDisplay`.
 
-**Riesgo:** una actualización de macOS puede cambiar o eliminar estas funciones privadas. SwitchResX y BetterDisplay usan el mismo mecanismo, así que también se romperían. Tras una actualización importante, lo primero es comprobar que `screensets off builtin` y `screensets on builtin` siguen funcionando con una pantalla externa encendida.
+**Riesgo:** una actualización de macOS puede cambiar o eliminar estas funciones privadas. Tras una actualización importante, lo primero es comprobar que `screensets off builtin` y `screensets on builtin` siguen funcionando con una pantalla externa encendida.
 
 ---
 
@@ -104,7 +104,7 @@ Cómo se construye cada entrada:
 3. En ese nodo del IORegistry, `DisplayAttributes → ProductAttributes` contiene el EDID interpretado: `ProductName`, `AlphanumericSerialNumber`, `ManufacturerID`, etc.
 4. **`connected = true`** si el nodo tiene `ProductAttributes`, o si es la interna. Los IDs huérfanos aparecen como `Unknown` / `--` en `screensets list` y se ignoran.
 
-**¿Por qué el serial alfanumérico?** Dos monitores iguales tienen el mismo nombre, y `CGDisplaySerialNumber` devuelve el serial *numérico* del EDID, que muchos monitores dejan a 0. El serial alfanumérico sí los distingue. SwitchResX usa el mismo dato (`edidSerialString`). El diccionario de CoreDisplay no lo incluye, por eso screensets lo lee del IORegistry.
+**¿Por qué el serial alfanumérico?** Dos monitores iguales tienen el mismo nombre, y `CGDisplaySerialNumber` devuelve el serial *numérico* del EDID, que muchos monitores dejan a 0. El serial alfanumérico sí los distingue. El diccionario de CoreDisplay no lo incluye, por eso screensets lo lee del IORegistry.
 
 Una pantalla **apagada** sigue devolviendo su `IODisplayLocation`, así que se puede identificar y volver a encender.
 
@@ -352,22 +352,7 @@ launchctl kickstart -k gui/$(id -u)/io.github.rubo88.screensets
 | Al desenchufar el único monitor con la interna apagada, ninguna pantalla | Pantalla fantasma «activa» + interna fuera de la lista | Regla «activa **y** conectada», ID recordado y rescate en bucle (§7) |
 | Los atajos solo respondían con los modificadores «equivocados» | Teclado que intercambia ⌘/⌃ antes de macOS | `modifiers` configurable |
 
-## 11. Migrar desde SwitchResX
-
-SwitchResX guarda los «display sets» en `~/Library/Preferences/fr.madrau.switchresx.daemon.plist`:
-
-- `displaySetsArray[]`: cada set tiene `name`, `keyCode` y `monitorArray[]`.
-- En `monitorArray`, solo las entradas con `hasActivity = true` encienden o apagan pantallas (`isActive`). `isMainDisplay` marca la principal.
-- `monitorResID` apunta a `allDisplays[id]`, donde están `sysMonitorName` y `edidSerialString`. Se corresponden directamente con los selectores `Nombre#SERIE` de screensets.
-- `keyCode = (códigoVirtualDeTecla << 8) | (modificadores NSEvent >> 16)`. Por ejemplo, `0x151C` es la tecla 21 (`4`) con `0x1C`, que es ⌃ (0x4) + ⌥ (0x8) + ⌘ (0x10).
-
-Volcado rápido:
-
-```bash
-plutil -p ~/Library/Preferences/fr.madrau.switchresx.daemon.plist | grep -E '"name"|keyCode|monitorResID|isActive|hasActivity'
-```
-
-## 12. Limitaciones conocidas
+## 11. Limitaciones conocidas
 
 - Depende de APIs privadas (§2).
 - `main` solo se aplica si la pantalla ya figura como activa en ese momento. Para una pantalla que enciende el mismo set, depende de lo rápido que macOS aplique el cambio. En las pruebas funcionó.

@@ -97,9 +97,6 @@ else
     exit 1
 fi
 
-if pgrep -fq "SwitchResX Daemon"; then
-    warn "SwitchResX is running: its hotkeys may clash with screensets. Quit it and remove it from Login Items."
-fi
 case ":$PATH:" in
     *":$BIN_DIR:"*) ;;
     *) warn "$BIN_DIR is not in your PATH. Add this to ~/.zshrc to use the 'screensets' command:
