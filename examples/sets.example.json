@@ -1,0 +1,16 @@
+{
+  "modifiers": "ctrl+alt+cmd",
+  "confirmSeconds": 15,
+  "language": "auto",
+  "sets": [
+    { "key": "1", "name": "Laptop only",        "on": ["builtin"], "off": ["external"] },
+    { "key": "2", "name": "Office: left only",  "on": ["builtin", "DELL P2422H#CN0ABC123"], "off": ["DELL P2422H#CN0XYZ789"] },
+    { "key": "3", "name": "Office: both, lid off", "on": ["DELL P2422H#CN0ABC123", "DELL P2422H#CN0XYZ789"], "off": ["builtin"] },
+    { "key": "4", "name": "Office: all three",  "on": ["builtin", "DELL P2422H#CN0ABC123", "DELL P2422H#CN0XYZ789"],
+                                                "main": "DELL P2422H#CN0ABC123" },
+    { "key": "8", "name": "Home: laptop + TV",  "on": ["builtin", "LG TV"], "main": "builtin" },
+    { "key": "9", "name": "Home: TV only",      "on": ["LG TV"], "off": ["builtin"] },
+    { "name": "Presentation (menu only)",       "on": ["builtin", "external"] },
+    { "key": "0", "name": "All on (emergency)", "on": ["*"] }
+  ]
+}
