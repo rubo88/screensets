@@ -941,7 +941,11 @@ func runDaemon() {
     CGDisplayRegisterReconfigurationCallback({ id, flags, _ in
         if flags.contains(.beginConfigurationFlag) { return }
         log("Reconfiguration: display \(id) flags=0x\(String(flags.rawValue, radix: 16))")
-        onMain(after: 1.5) { ensureSomeDisplay("reconfig"); menuController?.rebuild() }
+        onMain(after: 1.5) {
+            ensureSomeDisplay("reconfig")
+            menuController?.rebuild()
+            if SetEditor.shared?.window.isVisible == true { SetEditor.shared?.refreshDetail() }   // new displays show up live
+        }
     }, nil)
     // in case the reconfiguration callback never arrives
     RunLoop.main.add(Timer(timeInterval: 2, repeats: true) { _ in
