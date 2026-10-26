@@ -15,6 +15,7 @@ Está construida alrededor de una prioridad por encima de todo: **que nunca te q
 - **Ventana para editar los sets**: crea, edita, reordena y prueba sets con el ratón. Por detrás sigue habiendo un JSON sencillo, para quien lo prefiera.
 - **Identifica los monitores por el número de serie del EDID**, así que dos monitores iguales se controlan por separado.
 - **Pantalla principal por set** (la de la barra de menús), opcional.
+- **Interruptor de Control Universal** en el menú: apaga o enciende el enlace que permite pasar el ratón por un borde de la pantalla a otro Mac o iPad.
 - **Redes de seguridad**:
   - nunca apaga la última pantalla encendida;
   - una cuenta atrás de «¿Mantener esta configuración?» deshace el cambio si no respondes;
@@ -72,6 +73,7 @@ Pulsa el icono de dos pantallas:
 
 - **Pantallas**: las conectadas, con ✓ en las encendidas. Un clic en una la enciende o la apaga.
 - **Sets**: tus sets con su atajo. Un clic en uno lo aplica.
+- **Control Universal (ratón al otro Mac)**: ✓ mientras macOS deja pasar el ratón y el teclado a un Mac o iPad cercano. Un clic apaga ese enlace o lo vuelve a encender. Es el mismo interruptor que *Ajustes del Sistema › Pantallas › Avanzado*, se aplica en menos de un segundo y se queda como lo dejes, también al reiniciar.
 - **Editar sets…** (la ventana del editor), **Abrir sets.json** y **Ver registro**.
 
 Si no ves el icono, puede que lo esté escondiendo un gestor de la barra de menús como Bartender.

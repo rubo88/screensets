@@ -74,6 +74,7 @@ screensets is **a single Swift file** (`screensets.swift`, about 1,000 lines, no
 | `RegisterEventHotKey` / `InstallEventHandler` | Public (Carbon) | Global hotkeys **without Accessibility permission** |
 | `NSStatusItem`, `NSMenu`, `NSAlert` | Public (AppKit) | Icon, menu and confirmation dialog |
 | `ProcessInfo.beginActivity` | Public | Opting out of App Nap |
+| `CFPreferencesSetValue` on `com.apple.universalcontrol` (`kCFPreferencesCurrentHost`) | Public API, **undocumented key** (`Disable`) | Universal Control switch |
 
 Private functions are declared with `@_silgen_name`, and the binary links with `-F /System/Library/PrivateFrameworks -framework CoreDisplay`.
 
@@ -204,8 +205,15 @@ confirmKeep(secs) ── Keep ──► done
 ### Menu
 
 - An `NSStatusItem` with the SF Symbol `display.2`, as a template image so it adapts to light and dark mode.
-- Contents: the connected displays (✓ if active, click to toggle), the sets with their hotkey as `keyEquivalent`, then **Edit sets…**, **Open sets.json** and **Show log**.
+- Contents: the connected displays (✓ if active, click to toggle), the sets with their hotkey as `keyEquivalent`, the **Universal Control** switch, then **Edit sets…**, **Open sets.json** and **Show log**.
 - **The menu is rebuilt only while it is closed**: at launch, after every reconfiguration and every 2 s, guarded by `isOpen` (`menuWillOpen` / `menuDidClose`). Rebuilding it inside `menuNeedsUpdate` made AppKit on macOS 26 throw `NSGenericException` ("…more Layout Window passes than there are views…"), which killed the process.
+
+### Universal Control switch
+
+- It writes the same per-host preference as *System Settings › Displays › Advanced*: `Disable = true` in `com.apple.universalcontrol` (`~/Library/Preferences/ByHost/`) turns it off, and deleting the key turns it back on, which is the default.
+- The `UniversalControl` agent watches that key: it drops the link to the other Mac at once and restores it within about a second, with no process restart. Its log shows `=== Universal Control Disabled ===` / `Enabled ===`.
+- Unlike display changes, the setting is permanent (it survives a restart) and needs no confirmation, since it cannot leave you without a display.
+- The ✓ reads the key again on every menu rebuild, so it follows changes made in System Settings.
 
 ### Set editor (`SetEditor`)
 

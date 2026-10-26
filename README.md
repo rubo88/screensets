@@ -15,6 +15,7 @@ It is built around one priority above everything else: **you must never end up w
 - **Set editor window**: create, edit, reorder and test sets with the mouse. A plain JSON file stays underneath for those who prefer it.
 - **Identifies monitors by EDID serial number**, so two identical monitors can be controlled separately.
 - **Optional main display per set** (the one with the menu bar).
+- **Universal Control switch** in the menu: turn on or off the link that lets the pointer cross a screen edge to another Mac or iPad.
 - **Safety nets**:
   - it never turns off the last display that is on;
   - a "Keep this configuration?" countdown reverts the change if you don't answer;
@@ -72,6 +73,7 @@ Click the two-displays icon to see:
 
 - **Displays**: every connected display, with a ✓ on the ones that are on. Click one to toggle it.
 - **Sets**: your sets with their hotkeys. Click one to apply it.
+- **Universal Control (pointer to other Mac)**: ✓ while macOS lets the pointer and keyboard move to a nearby Mac or iPad. Click it to turn that link off or back on. It is the same switch as *System Settings › Displays › Advanced*, takes effect within a second and stays as you leave it, also after a restart.
 - **Edit sets…** (the editor window), **Open sets.json** and **Show log**.
 
 If you can't see the icon, a menu bar manager such as Bartender may be hiding it.

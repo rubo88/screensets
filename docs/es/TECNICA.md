@@ -74,6 +74,7 @@ screensets es **un único fichero Swift** (`screensets.swift`, unas 1.000 línea
 | `RegisterEventHotKey` / `InstallEventHandler` | Pública (Carbon) | Atajos globales **sin permiso de Accesibilidad** |
 | `NSStatusItem`, `NSMenu`, `NSAlert` | Pública (AppKit) | Icono, menú y confirmación |
 | `ProcessInfo.beginActivity` | Pública | Evitar App Nap |
+| `CFPreferencesSetValue` sobre `com.apple.universalcontrol` (`kCFPreferencesCurrentHost`) | API pública, **clave no documentada** (`Disable`) | Interruptor de Control Universal |
 
 Las funciones privadas se declaran con `@_silgen_name` y se enlaza con `-F /System/Library/PrivateFrameworks -framework CoreDisplay`.
 
@@ -204,8 +205,15 @@ confirmKeep(secs) ── Mantener ──► fin
 ### Menú
 
 - `NSStatusItem` con el símbolo SF `display.2`, en modo plantilla para adaptarse al modo claro u oscuro.
-- Contenido: las pantallas conectadas (✓ si están activas; un clic las enciende o apaga), los sets con su atajo como `keyEquivalent`, y **Editar sets…**, **Abrir sets.json** y **Ver registro**.
+- Contenido: las pantallas conectadas (✓ si están activas; un clic las enciende o apaga), los sets con su atajo como `keyEquivalent`, el interruptor de **Control Universal**, y **Editar sets…**, **Abrir sets.json** y **Ver registro**.
 - **El menú se reconstruye solo cuando está cerrado**: al arrancar, tras cada reconfiguración y cada 2 s, con la guarda `isOpen` (`menuWillOpen` / `menuDidClose`). Reconstruirlo en `menuNeedsUpdate` hacía que AppKit en macOS 26 lanzara `NSGenericException` («…more Layout Window passes than there are views…») y el proceso moría.
+
+### Interruptor de Control Universal
+
+- Escribe la misma preferencia por equipo que *Ajustes del Sistema › Pantallas › Avanzado*: `Disable = true` en `com.apple.universalcontrol` (`~/Library/Preferences/ByHost/`) lo apaga, y borrar la clave lo vuelve a encender, que es el valor por defecto.
+- El agente `UniversalControl` vigila esa clave: corta el enlace con el otro Mac al momento y lo recupera en un segundo aproximadamente, sin reiniciar ningún proceso. Su registro muestra `=== Universal Control Disabled ===` / `Enabled ===`.
+- A diferencia de los cambios de pantalla, el ajuste es permanente (sobrevive a un reinicio) y no pide confirmación, porque no puede dejarte sin pantalla.
+- La ✓ vuelve a leer la clave en cada reconstrucción del menú, así que sigue los cambios hechos en Ajustes del Sistema.
 
 ### Editor de sets (`SetEditor`)
 

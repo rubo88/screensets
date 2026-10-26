@@ -152,6 +152,23 @@ func setMain(_ id: CGDirectDisplayID) {
     CGCompleteDisplayConfiguration(cfg, .forSession)
 }
 
+// ---------- Universal Control (pointer and keyboard to a nearby Mac or iPad) ----------
+
+// The same switch as System Settings > Displays > Advanced: the per-host "Disable" key, which
+// the UniversalControl agent watches live (it drops or restores the link within a second).
+let ucDomain = "com.apple.universalcontrol" as CFString
+
+func universalControlEnabled() -> Bool {
+    CFPreferencesCopyValue("Disable" as CFString, ucDomain, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost) as? Bool != true
+}
+
+func setUniversalControl(_ on: Bool) {
+    // removing the key restores the default (on) instead of pinning an explicit value
+    CFPreferencesSetValue("Disable" as CFString, on ? nil : kCFBooleanTrue, ucDomain, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
+    CFPreferencesSynchronize(ucDomain, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost)
+    log("Universal Control \(on ? "on" : "off")")
+}
+
 // ---------- sets ----------
 
 struct DisplaySet: Codable {
@@ -411,6 +428,9 @@ final class MenuController: NSObject, NSMenuDelegate {
             if let k = s.key { mi.keyEquivalent = k; mi.keyEquivalentModifierMask = menuModifiers(cfg?.modifiers) }
         }
         menu.addItem(.separator())
+        add(L("Universal Control (pointer to other Mac)", "Control Universal (ratón al otro Mac)"),
+            #selector(toggleUniversalControl), nil).state = universalControlEnabled() ? .on : .off
+        menu.addItem(.separator())
         add(L("Edit sets…", "Editar sets…"), #selector(editSets), nil)
         add(L("Open sets.json", "Abrir sets.json"), #selector(openJSON), nil)
         add(L("Show log", "Ver registro"), #selector(showLog), nil)
@@ -440,6 +460,10 @@ final class MenuController: NSObject, NSMenuDelegate {
     @objc func applySetItem(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String, let s = findSet(name) else { return }
         runAction(s.name) { applySet(s) }
+    }
+    @objc func toggleUniversalControl() {
+        setUniversalControl(!universalControlEnabled())
+        rebuild()
     }
     @objc func editSets() { SetEditor.show() }
     @objc func openJSON() { NSWorkspace.shared.open(URL(fileURLWithPath: configPath)) }
